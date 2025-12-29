@@ -9,32 +9,20 @@ train_dir = r"C:\Users\tvoro\OneDrive\Рабочий стол\курс\data\trai
 test_dir  = r"C:\Users\tvoro\OneDrive\Рабочий стол\курс\data\test"
 
 
-train_datagen = ImageDataGenerator(
-    rescale=1./255,
-    rotation_range=15,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
-    horizontal_flip=True,
-    fill_mode='nearest'
-)
+datagen = ImageDataGenerator(rescale=1./255)
 
-# Для тестовой выборки — только нормализация, без аугментации
-test_datagen = ImageDataGenerator(rescale=1./255)
-
-train_data = train_datagen.flow_from_directory(
+train_data = datagen.flow_from_directory(
     train_dir,
     target_size=(IMG_HEIGHT, IMG_WIDTH),
     batch_size=BATCH_SIZE,
-    class_mode='categorical',
-    shuffle=True
+    class_mode='categorical'
 )
 
-test_data = test_datagen.flow_from_directory(
+test_data = datagen.flow_from_directory(
     test_dir,
     target_size=(IMG_HEIGHT, IMG_WIDTH),
     batch_size=BATCH_SIZE,
-    class_mode='categorical',
-    shuffle=False
+    class_mode='categorical'
 )
 
 model = tf.keras.Sequential([
@@ -47,8 +35,7 @@ model = tf.keras.Sequential([
 
     tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(64, activation='relu'),
-    tf.keras.layers.Dropout(0.5),
-    tf.keras.layers.Dense(3, activation='softmax')
+    tf.keras.layers.Dense(3, activation='softmax')  # ЛИСТ / ЗОНТ / ОБЛАКО
 ])
 
 model.compile(
@@ -59,12 +46,6 @@ model.compile(
 
 model.summary()
 
+model.fit(train_data, epochs=20, validation_data=test_data)
 
-history = model.fit(
-    train_data,
-    epochs=25,
-    validation_data=test_data
-)
-
-# Сохранение модели
 model.save("watermark_model.h5")
